@@ -3,7 +3,7 @@ name: Auto Post Instagram Reels
 on:
   schedule:
     # Runs at minute 0 of every hour (UTC time)
-    - cron: '0 * * * *'
+    - cron: '20 17 * * *'
   workflow_dispatch: # Allows manual trigger from the GitHub Actions tab for testing
 
 jobs:
