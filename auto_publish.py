@@ -1,6 +1,8 @@
 import os
 import json
 import argparse
+import time
+import requests
 from datetime import datetime, timezone, timedelta
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -38,12 +40,35 @@ def find_today_folder(drive, date_str):
     return items[0] if items else None
 
 def download_file(drive, file_id, output_path):
-    request = drive.files().get_media(fileId=file_id)
-    with open(output_path, 'wb') as f:
-        downloader = MediaIoBaseDownload(f, request)
-        done = False
-        while not done:
-            _, done = downloader.next_chunk()
+    """Надзейнае спампоўванне файла з Google Дыска з паўторнымі спробамі пры абрыве."""
+    # Правяраем і абнаўляем токен пры патрэбе
+    creds = drive._http.credentials
+    if not creds.valid:
+        creds.refresh(Request())
+        
+    access_token = creds.token
+    url = f"https://www.googleapis.com/drive/v3/files/{file_id}?alt=media"
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    max_retries = 5
+    for attempt in range(max_retries):
+        try:
+            print(f"Спампоўванне файла (спроба {attempt + 1}/{max_retries})...")
+            response = requests.get(url, headers=headers, stream=True, timeout=60)
+            response.raise_for_status()
+            
+            with open(output_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=1024 * 1024):
+                    if chunk:
+                        f.write(chunk)
+            print("Файл паспяхова спампаваны!")
+            return
+        except Exception as e:
+            print(f"Памылка падчас спампоўвання: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(5)
+            else:
+                raise e
 
 def get_sessionid_from_netscape(cookies_text):
     """Вытаскивает sessionid из текста куки Netscape, если он передан целиком."""
