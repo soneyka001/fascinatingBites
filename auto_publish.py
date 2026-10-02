@@ -99,13 +99,28 @@ def publish_to_instagram(video_path, meta_data):
     media = cl.clip_upload(path=video_path, caption=caption)
     print(f"Успешно опубликовано в Instagram Reels! ID: {media.pk}")
 
+def clean_netscape_cookies(cookies_text):
+    """Очищает текст Netscape cookies от префиксов #HttpOnly_."""
+    cleaned_lines = []
+    for line in cookies_text.splitlines():
+        if line.startswith("#HttpOnly_"):
+            line = line[len("#HttpOnly_"):]
+        cleaned_lines.append(line)
+    return "\n".join(cleaned_lines)
+
 def publish_to_tiktok(video_path, meta_data):
     """Публикация в TikTok через эмуляцию с куки."""
     description = meta_data.get('description', meta_data.get('title', ''))
     
+    if not TT_COOKIES_TEXT:
+        raise Exception("Ошибка: Не найден TT_COOKIES_TEXT в Secrets!")
+
+    # Очищаем куки от префикса #HttpOnly_
+    cleaned_cookies = clean_netscape_cookies(TT_COOKIES_TEXT)
+
     cookies_file = "tiktok_cookies.txt"
     with open(cookies_file, "w", encoding="utf-8") as f:
-        f.write(TT_COOKIES_TEXT)
+        f.write(cleaned_cookies)
 
     print("Запуск загрузки в TikTok...")
     try:
@@ -116,6 +131,9 @@ def publish_to_tiktok(video_path, meta_data):
             headless=True
         )
         print("Успешно опубликовано в TikTok!")
+    except Exception as e:
+        print(f"Ошибка при публикации в TikTok: {e}")
+        raise e
     finally:
         if os.path.exists(cookies_file):
             os.remove(cookies_file)
