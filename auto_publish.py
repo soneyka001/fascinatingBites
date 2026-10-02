@@ -82,7 +82,9 @@ def get_sessionid_from_netscape(cookies_text):
 def publish_to_instagram(video_path, meta_data):
     """Публикация в Instagram Reels по sessionid."""
     caption = meta_data.get('caption', meta_data.get('description', ''))
-    
+    # Праверка наяўнасці пераменных у асяроддзі
+    print(f"DEBUG: IG_SESSION_ID перададзены: {bool(IG_SESSION_ID)}")
+    print(f"DEBUG: IG_COOKIES_TEXT перададзены: {bool(IG_COOKIES_TEXT)}")
     # Ищем sessionid либо в отдельной переменной, либо извлекаем из куки-файла
     session_id = IG_SESSION_ID or get_sessionid_from_netscape(IG_COOKIES_TEXT)
     
