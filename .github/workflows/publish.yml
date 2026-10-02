@@ -1,0 +1,46 @@
+name: Daily Short Auto Publisher (No API)
+
+on:
+  schedule:
+    - cron: '10 17 * * *' # 20:10 UTC+3 (TikTok)
+    - cron: '20 17 * * *' # 20:20 UTC+3 (Instagram)
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib instagrapi tiktok-uploader
+          playwright install chromium --with-deps
+
+      - name: Determine platform
+        id: target
+        run: |
+          MINUTE=$(date -u +%M)
+          if [ "$MINUTE" -ge "05" ] && [ "$MINUTE" -le "15" ]; then
+            echo "platform=tiktok" >> $GITHUB_OUTPUT
+          else
+            echo "platform=instagram" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Execute Publisher
+        env:
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+          IG_USERNAME: ${{ secrets.IG_USERNAME }}
+          IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
+          TT_COOKIES_TEXT: ${{ secrets.TT_COOKIES_TEXT }}
+        run: |
+          python auto_publish.py --platform ${{ steps.target.outputs.platform }}
