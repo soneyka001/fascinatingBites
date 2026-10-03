@@ -2,8 +2,8 @@ name: Daily Short Auto Publisher (No API)
 
 on:
   schedule:
-    - cron: '10 17 * * *' # 20:10 UTC+3 (TikTok)
-    - cron: '20 17 * * *' # 20:20 UTC+3 (Instagram)
+    - cron: '30 16 * * *' # 19:30 UTC+3 (TikTok)
+    - cron: '40 16 * * *' # 19:40 UTC+3 (Instagram)
   workflow_dispatch:
 
 jobs:
