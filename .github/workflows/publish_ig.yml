@@ -44,4 +44,4 @@ jobs:
           IG_USERNAME: ${{ secrets.IG_USERNAME }}
           IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
         run: |
-          python auto_publish.py --platform ${{ steps.target.outputs.platform }}
+          python auto_publish_ig.py --platform ${{ steps.target.outputs.platform }}
