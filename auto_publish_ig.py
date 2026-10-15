@@ -10,7 +10,6 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 from instagrapi import Client as IGClient
-from tiktok_uploader.upload import upload_video
 
 # Переменные Google Drive
 GDRIVE_CLIENT_ID = os.getenv("GDRIVE_CLIENT_ID")
@@ -20,7 +19,6 @@ GDRIVE_REFRESH_TOKEN = os.getenv("GDRIVE_REFRESH_TOKEN")
 # Переменные соцсетей
 IG_SESSION_ID = os.getenv("IG_SESSION_ID")
 IG_COOKIES_TEXT = os.getenv("IG_COOKIES_TEXT", "")
-TT_COOKIES_TEXT = os.getenv("TT_COOKIES_TEXT")
 
 def get_drive_service():
     creds = Credentials(
@@ -108,36 +106,6 @@ def clean_netscape_cookies(cookies_text):
         cleaned_lines.append(line)
     return "\n".join(cleaned_lines)
 
-def publish_to_tiktok(video_path, meta_data):
-    """Публикация в TikTok через эмуляцию с куки."""
-    description = meta_data.get('description', meta_data.get('title', ''))
-    
-    if not TT_COOKIES_TEXT:
-        raise Exception("Ошибка: Не найден TT_COOKIES_TEXT в Secrets!")
-
-    # Очищаем куки от префикса #HttpOnly_
-    cleaned_cookies = clean_netscape_cookies(TT_COOKIES_TEXT)
-
-    cookies_file = "tiktok_cookies.txt"
-    with open(cookies_file, "w", encoding="utf-8") as f:
-        f.write(cleaned_cookies)
-
-    print("Запуск загрузки в TikTok...")
-    try:
-        upload_video(
-            filename=video_path,
-            description=description,
-            cookies=cookies_file,
-            headless=True
-        )
-        print("Успешно опубликовано в TikTok!")
-    except Exception as e:
-        print(f"Ошибка при публикации в TikTok: {e}")
-        raise e
-    finally:
-        if os.path.exists(cookies_file):
-            os.remove(cookies_file)
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--platform", choices=["tiktok", "instagram"], required=True)
@@ -172,9 +140,7 @@ def main():
 
     with open(meta_path, 'r', encoding='utf-8') as f:
         meta_data = json.load(f)
-
-    if args.platform == "tiktok":
-        publish_to_tiktok(video_path, meta_data)
+        
     elif args.platform == "instagram":
         publish_to_instagram(video_path, meta_data)
 
