@@ -2,7 +2,6 @@
 
 #on:
 #  schedule:
-#    - cron: '30 16 * * *' # 19:30 UTC+3 (TikTok)
     - cron: '40 16 * * *' # 19:40 UTC+3 (Instagram)
   workflow_dispatch:
 
@@ -44,6 +43,5 @@ jobs:
           GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
           IG_USERNAME: ${{ secrets.IG_USERNAME }}
           IG_PASSWORD: ${{ secrets.IG_PASSWORD }}
-          TT_COOKIES_TEXT: ${{ secrets.TT_COOKIES_TEXT }}
         run: |
           python auto_publish.py --platform ${{ steps.target.outputs.platform }}
