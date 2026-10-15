@@ -1,7 +1,7 @@
-#name: Daily Short Auto Publisher (No API)
+name: Daily Short Auto Publisher (No API)
 
-#on:
-#  schedule:
+on:
+  schedule:
     - cron: '40 16 * * *' # 19:40 UTC+3 (Instagram)
   workflow_dispatch:
 
